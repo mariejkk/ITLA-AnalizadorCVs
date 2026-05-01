@@ -2,10 +2,13 @@
 
 Pipeline automatizado de reclutamiento que extrae, evalúa y clasifica candidatos desde PDFs usando Inteligencia Artificial.
 
+---
+
 ## ¿Qué hace?
 
 Sube uno o varios CVs en PDF, define los requisitos de tu vacante y el sistema genera automáticamente un ranking de candidatos con puntaje de compatibilidad.
 
+---
 
 ## 🛠️ Stack
 
@@ -14,8 +17,10 @@ Sube uno o varios CVs en PDF, define los requisitos de tu vacante y el sistema g
 - **Extracción de texto:** Azure Document Intelligence
 - **Análisis con IA:** Groq API — LLaMA 3.3 70B
 - **Almacenamiento:** Azure Blob Storage
+  
+---
 
-## ⚙️ Instalación
+## ⚙️ Instalación Local
 
 ### 1. Clona el repositorio
 ```bash
@@ -50,6 +55,8 @@ uvicorn main:app --reload
 
 Abre tu navegador en `http://localhost:8000`
 
+---
+
 ## 📡 Endpoints
 
 | Método | Ruta | Descripción |
@@ -59,12 +66,15 @@ Abre tu navegador en `http://localhost:8000`
 | POST | `/api/process-cv` | Analiza un CV individual |
 | POST | `/api/process-batch` | Analiza múltiples CVs en lote |
 
+---
 
 ## 📋 Requisitos previos
 
 - Python 3.10+
 - Cuenta en [Azure](https://azure.microsoft.com/) con Document Intelligence y Blob Storage activos
 - API Key de [Groq](https://console.groq.com/)
+  
+---
 
 ## 📁 Estructura del proyecto
 
