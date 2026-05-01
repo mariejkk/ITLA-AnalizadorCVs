@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CV Pipeline — Procesamiento Inteligente</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0a0a0f;
+  --surface:#12121a;
+  --surface2:#1a1a26;
+  --surface3:#22223a;
+  --border:#2a2a42;
+  --border2:#3a3a5a;
+  --text:#e8e8f4;
+  --muted:#7070a0;
+  --accent:#6c63ff;
+  --accent2:#a78bfa;
+  --green:#22d3a0;
+  --amber:#f59e0b;
+  --red:#f43f5e;
+  --font-head:'Syne',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:15px;
+  line-height:1.6;
+  min-height:100vh;
+}
+
+/* Grid noise texture */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -20%,rgba(108,99,255,.18) 0,transparent 70%),
+    radial-gradient(ellipse 40% 40% at 90% 80%,rgba(167,139,250,.08) 0,transparent 60%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── Layout ── */
+.wrapper{max-width:1100px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+
+/* ── Header ── */
+header{
+  padding:36px 0 28px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:20px;
+}
+.logo{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-head);font-weight:800;font-size:18px;color:#fff;
+  flex-shrink:0;
+}
+header h1{font-family:var(--font-head);font-size:22px;font-weight:700;letter-spacing:-.3px}
+header p{font-size:13px;color:var(--muted);margin-top:2px}
+.badge-azure{
+  margin-left:auto;
+  font-size:11px;font-family:var(--font-mono);
+  background:rgba(108,99,255,.15);
+  border:1px solid rgba(108,99,255,.3);
+  color:var(--accent2);
+  padding:4px 12px;border-radius:20px;white-space:nowrap;
+}
+
+/* ── Main grid ── */
+.main-grid{
+  display:grid;
+  grid-template-columns:380px 1fr;
+  gap:28px;
+  padding:28px 0;
+  align-items:start;
+}
+@media(max-width:800px){.main-grid{grid-template-columns:1fr}}
+
+/* ── Cards ── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px;
+}
+.card-title{
+  font-family:var(--font-head);
+  font-size:15px;font-weight:600;
+  margin-bottom:18px;
+  color:var(--text);
+  display:flex;align-items:center;gap:8px;
+}
+.card-title .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);display:inline-block;
+}
+
+/* ── Form elements ── */
+label{
+  display:block;font-size:12px;font-weight:500;
+  color:var(--muted);letter-spacing:.5px;text-transform:uppercase;
+  margin-bottom:6px;
+}
+input[type=text],textarea,select{
+  width:100%;background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:10px;padding:10px 14px;
+  color:var(--text);font-family:var(--font-body);font-size:14px;
+  outline:none;transition:border-color .2s;
+}
+input[type=text]:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:120px;resize:vertical;line-height:1.6}
+
+.field{margin-bottom:16px}
+
+/* ── Dropzone ── */
+.dropzone{
+  border:2px dashed var(--border2);
+  border-radius:14px;
+  padding:32px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+  background:var(--surface2);
+  margin-bottom:16px;
+}
+.dropzone:hover,.dropzone.drag-over{
+  border-color:var(--accent);
+  background:rgba(108,99,255,.08);
+}
+.dropzone input{display:none}
+.dropzone-icon{font-size:32px;margin-bottom:12px;display:block;opacity:.7}
+.dropzone-title{font-family:var(--font-head);font-size:15px;font-weight:600;margin-bottom:4px}
+.dropzone-sub{font-size:12px;color:var(--muted)}
+.file-list{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.file-chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface3);border:1px solid var(--border);
+  border-radius:8px;padding:6px 12px;font-size:13px;
+}
+.file-chip .fname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-chip .rm{cursor:pointer;color:var(--muted);font-size:16px;line-height:1}
+.file-chip .rm:hover{color:var(--red)}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 22px;border-radius:10px;
+  font-family:var(--font-head);font-size:14px;font-weight:600;
+  cursor:pointer;border:none;transition:all .15s;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;width:100%;
+}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-outline{
+  background:transparent;border:1px solid var(--border2);
+  color:var(--text);font-size:12px;padding:7px 14px;
+}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent2)}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:4px;margin-bottom:20px;
+  background:var(--surface2);border-radius:10px;padding:4px}
+.tab{
+  flex:1;padding:8px;text-align:center;
+  font-family:var(--font-head);font-size:13px;font-weight:600;
+  border-radius:7px;cursor:pointer;color:var(--muted);transition:all .2s;
+}
+.tab.active{background:var(--surface3);color:var(--text)}
+
+/* ── Results ── */
+#results-panel{display:flex;flex-direction:column;gap:16px}
+
+/* Empty state */
+.empty-state{
+  text-align:center;padding:60px 20px;
+  background:var(--surface);border:1px dashed var(--border);
+  border-radius:16px;
+}
+.empty-state .big-icon{font-size:48px;opacity:.3;margin-bottom:16px;display:block}
+.empty-state p{color:var(--muted);font-size:14px}
+
+/* Result card */
+.result-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;
+  animation:slideIn .3s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.result-card-header{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 20px;border-bottom:1px solid var(--border);
+}
+.avatar{
+  width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-head);font-weight:800;font-size:15px;color:#fff;
+  flex-shrink:0;
+}
+.result-name{font-family:var(--font-head);font-size:16px;font-weight:700}
+.result-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.cls-badge{
+  margin-left:auto;
+  font-size:11px;font-family:var(--font-mono);font-weight:500;
+  padding:5px 12px;border-radius:20px;white-space:nowrap;
+}
+.cls-prioritario{background:rgba(34,211,160,.15);color:var(--green);border:1px solid rgba(34,211,160,.3)}
+.cls-espera{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
+.cls-descartado{background:rgba(244,63,94,.12);color:var(--red);border:1px solid rgba(244,63,94,.25)}
+
+.result-body{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+
+/* Score bar */
+.score-row{display:flex;align-items:center;gap:14px}
+.score-label{font-family:var(--font-mono);font-size:13px;color:var(--muted);white-space:nowrap}
+.score-bar-wrap{flex:1;background:var(--surface3);border-radius:6px;height:8px;overflow:hidden}
+.score-bar{height:100%;border-radius:6px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.score-num{font-family:var(--font-mono);font-size:16px;font-weight:500;min-width:36px;text-align:right}
+
+.score-bar.high{background:linear-gradient(90deg,var(--green),#6ee7b7)}
+.score-bar.mid{background:linear-gradient(90deg,var(--amber),#fcd34d)}
+.score-bar.low{background:linear-gradient(90deg,var(--red),#fb7185)}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  font-size:12px;padding:3px 10px;border-radius:20px;
+  background:var(--surface3);border:1px solid var(--border2);color:var(--muted);
+}
+
+/* Resumen */
+.resumen-section details{cursor:pointer}
+.resumen-section summary{
+  font-size:12px;font-weight:500;color:var(--muted);
+  letter-spacing:.4px;text-transform:uppercase;
+  list-style:none;display:flex;align-items:center;gap:6px;
+}
+.resumen-section summary::after{content:'▾';transition:transform .2s}
+details[open] summary::after{transform:rotate(-180deg)}
+.resumen-text{
+  margin-top:10px;font-size:13px;line-height:1.7;color:var(--muted);
+  border-left:2px solid var(--accent);padding-left:12px;
+}
+
+/* Info grid */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.info-item{font-size:13px}
+.info-item .k{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.info-item .v{font-family:var(--font-mono);font-size:13px}
+
+/* Progress overlay */
+.processing-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(10,10,15,.85);
+  backdrop-filter:blur(8px);
+  z-index:100;
+  align-items:center;justify-content:center;flex-direction:column;gap:20px;
+}
+.processing-overlay.active{display:flex}
+.spinner{
+  width:48px;height:48px;border-radius:50%;
+  border:3px solid var(--border2);
+  border-top-color:var(--accent);
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing-msg{font-family:var(--font-head);font-size:18px;font-weight:600}
+.processing-sub{font-size:13px;color:var(--muted)}
+
+/* Stats bar */
+.stats-bar{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:12px;margin-bottom:20px;
+}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;text-align:center;
+}
+.stat-val{font-family:var(--font-head);font-size:24px;font-weight:800;line-height:1}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+
+/* Error toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:200;
+  background:#1e1030;border:1px solid rgba(244,63,94,.4);
+  color:var(--red);border-radius:12px;padding:14px 20px;
+  font-size:13px;max-width:360px;line-height:1.5;
+  animation:toastIn .3s ease;display:none;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">CV</div>
+    <div>
+      <h1>CV Pipeline</h1>
+      <p>Procesamiento inteligente de hojas de vida</p>
+    </div>
+    <span class="badge-azure">Azure AI + OpenAI</span>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- ── Left panel: Config ── -->
+    <div>
+      <!-- Vacante -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><span class="dot"></span> Vacante</div>
+        <div class="field">
+          <label>Título del cargo</label>
+          <input type="text" id="vacante-titulo" placeholder="Ej: Desarrollador Backend Senior"/>
+        </div>
+        <div class="field">
+          <label>Requisitos</label>
+          <textarea id="vacante-req" placeholder="Describe habilidades, años de experiencia, educación, idiomas requeridos…"></textarea>
+        </div>
+      </div>
+
+      <!-- Upload -->
+      <div class="card">
+        <div class="card-title"><span class="dot"></span> Cargar CVs</div>
+
+        <div class="tabs">
+          <div class="tab active" data-mode="single" onclick="switchMode('single',this)">Individual</div>
+          <div class="tab" data-mode="batch" onclick="switchMode('batch',this)">Lote</div>
+        </div>
+
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+          <input type="file" id="file-input" accept=".pdf,.docx" multiple/>
+          <span class="dropzone-icon">📄</span>
+          <div class="dropzone-title" id="dz-title">Arrastra el CV aquí</div>
+          <div class="dropzone-sub" id="dz-sub">PDF o Word · máx 10 MB</div>
+          <div class="file-list" id="file-list"></div>
+        </div>
+
+        <button class="btn btn-primary" id="process-btn" onclick="processCV()" disabled>
+          Analizar CV ↗
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Right panel: Results ── -->
+    <div>
+      <div class="stats-bar" id="stats-bar" style="display:none">
+        <div class="stat-card">
+          <div class="stat-val" id="stat-total">0</div>
+          <div class="stat-lbl">Procesados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--green)" id="stat-prio">0</div>
+          <div class="stat-lbl">Prioritarios</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--amber)" id="stat-esp">0</div>
+          <div class="stat-lbl">En espera</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--red)" id="stat-desc">0</div>
+          <div class="stat-lbl">Descartados</div>
+        </div>
+      </div>
+
+      <div id="results-panel">
+        <div class="empty-state">
+          <span class="big-icon">🎯</span>
+          <p>Los resultados del análisis aparecerán aquí.<br/>Carga un CV y configura la vacante para comenzar.</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-grid -->
+</div>
+
+<!-- Overlay procesando -->
+<div class="processing-overlay" id="overlay">
+  <div class="spinner"></div>
+  <div class="processing-msg" id="overlay-msg">Extrayendo información…</div>
+  <div class="processing-sub" id="overlay-sub">Azure Document Intelligence + GPT-4o</div>
+</div>
+
+<!-- Toast error -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Config ──────────────────────────────────────────────────────────────────
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:8000'
+  : '';  // mismo origen en producción
+
+// ── State ───────────────────────────────────────────────────────────────────
+let files = [];
+let mode = 'single';
+let allResults = [];
+
+// ── Mode switch ──────────────────────────────────────────────────────────────
+function switchMode(m, el) {
+  mode = m;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const fi = document.getElementById('file-input');
+  fi.multiple = m === 'batch';
+  document.getElementById('dz-title').textContent = m === 'batch' ? 'Arrastra los CVs aquí' : 'Arrastra el CV aquí';
+  document.getElementById('dz-sub').textContent = m === 'batch' ? 'PDF o Word · múltiples archivos' : 'PDF o Word · máx 10 MB';
+  const btn = document.getElementById('process-btn');
+  btn.textContent = m === 'batch' ? 'Analizar Lote ↗' : 'Analizar CV ↗';
+}
+
+// ── Dropzone ─────────────────────────────────────────────────────────────────
+const dz = document.getElementById('dropzone');
+const fi = document.getElementById('file-input');
+
+fi.addEventListener('change', e => addFiles(e.target.files));
+
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  addFiles(e.dataTransfer.files);
+});
+
+function addFiles(newFiles) {
+  const arr = Array.from(newFiles);
+  if (mode === 'single') files = arr.slice(0, 1);
+  else files = [...files, ...arr];
+  renderFileList();
+}
+
+function removeFile(i) {
+  files.splice(i, 1);
+  renderFileList();
+}
+
+function renderFileList() {
+  const list = document.getElementById('file-list');
+  list.innerHTML = files.map((f, i) => `
+    <div class="file-chip">
+      <span style="font-size:14px">📄</span>
+      <span class="fname">${f.name}</span>
+      <span style="font-size:11px;color:var(--muted)">${(f.size/1024).toFixed(0)} KB</span>
+      <span class="rm" onclick="removeFile(${i})">✕</span>
+    </div>
+  `).join('');
+  document.getElementById('process-btn').disabled = files.length === 0;
+}
+
+// ── Process ──────────────────────────────────────────────────────────────────
+async function processCV() {
+  const titulo = document.getElementById('vacante-titulo').value.trim();
+  const req    = document.getElementById('vacante-req').value.trim();
+
+  if (!titulo || !req) { showToast('Completa el título y requisitos de la vacante.'); return; }
+  if (files.length === 0) { showToast('Selecciona al menos un CV.'); return; }
+
+  showOverlay(mode === 'batch' ? `Procesando ${files.length} CVs…` : 'Extrayendo información del CV…');
+
+  try {
+    if (mode === 'single') {
+      await processSingle(files[0], titulo, req);
+    } else {
+      await processBatch(files, titulo, req);
+    }
+  } catch(e) {
+    showToast('Error: ' + (e.message || 'Revisa la configuración del servidor'));
+  } finally {
+    hideOverlay();
+  }
+}
+
+async function processSingle(file, titulo, req) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('vacante_titulo', titulo);
+  fd.append('vacante_requisitos', req);
+
+  setOverlayMsg('Analizando con Azure OpenAI…', 'Calculando match score y generando resumen');
+
+  const r = await fetch(`${API_BASE}/api/process-cv`, { method: 'POST', body: fd });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${r.status}`);
+  }
+  const data = await r.json();
+  allResults.unshift(data);
+  renderResults();
+}
+
+async function processBatch(fileArr, titulo, req) {
+  const fd = new FormData();
+  fileArr.forEach(f => fd.append('files', f));
+  fd.append('vacante_titulo', titulo);
+  fd.append('vacante_requisitos', req);
+
+  setOverlayMsg('Procesando lote en paralelo…', 'Esto puede tomar varios segundos');
+
+  const r = await fetch(`${API_BASE}/api/process-batch`, { method: 'POST', body: fd });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${r.status}`);
+  }
+  const data = await r.json();
+  // Batch returns summary, not full CVResult per candidate
+  // We reconstruct minimal cards from results array
+  data.resultados.forEach(item => {
+    allResults.unshift({
+      candidato_id: item.candidato_id,
+      nombre: item.nombre,
+      match_score: item.match_score,
+      clasificacion: item.clasificacion,
+      habilidades: [],
+      idiomas: [],
+      resumen_ejecutivo: '(Carga individual para ver resumen completo)',
+      procesado_en: new Date().toISOString(),
+      _batch: true,
+      _archivo: item.archivo
+    });
+  });
+  if (data.errores.length > 0) {
+    showToast(`${data.errores.length} archivo(s) fallaron al procesar.`);
+  }
+  renderResults();
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function renderResults() {
+  const panel = document.getElementById('results-panel');
+  panel.innerHTML = '';
+
+  if (allResults.length === 0) {
+    panel.innerHTML = `<div class="empty-state">
+      <span class="big-icon">🎯</span>
+      <p>Los resultados aparecerán aquí.</p>
+    </div>`;
+    document.getElementById('stats-bar').style.display = 'none';
+    return;
+  }
+
+  // Stats
+  document.getElementById('stats-bar').style.display = 'grid';
+  document.getElementById('stat-total').textContent = allResults.length;
+  document.getElementById('stat-prio').textContent = allResults.filter(r => r.clasificacion === 'candidato_prioritario').length;
+  document.getElementById('stat-esp').textContent  = allResults.filter(r => r.clasificacion === 'candidato_en_espera').length;
+  document.getElementById('stat-desc').textContent = allResults.filter(r => r.clasificacion === 'descartado').length;
+
+  allResults.forEach((r, i) => {
+    panel.appendChild(buildCard(r, i));
+  });
+}
+
+function buildCard(r, i) {
+  const initials = r.nombre.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
+  const clsLabel = {
+    'candidato_prioritario': 'Prioritario',
+    'candidato_en_espera':   'En espera',
+    'descartado':            'Descartado'
+  }[r.clasificacion] || r.clasificacion;
+  const clsCss = {
+    'candidato_prioritario': 'cls-prioritario',
+    'candidato_en_espera':   'cls-espera',
+    'descartado':            'cls-descartado'
+  }[r.clasificacion] || '';
+  const scoreColor = r.match_score >= 75 ? 'high' : r.match_score >= 50 ? 'mid' : 'low';
+  const fecha = new Date(r.procesado_en).toLocaleString('es-DO');
+
+  const div = document.createElement('div');
+  div.className = 'result-card';
+  div.innerHTML = `
+    <div class="result-card-header">
+      <div class="avatar">${initials}</div>
+      <div>
+        <div class="result-name">${esc(r.nombre)}</div>
+        <div class="result-meta">
+          ID: ${r.candidato_id}
+          ${r.email ? ' · ' + esc(r.email) : ''}
+          ${r._archivo ? ' · ' + esc(r._archivo) : ''}
+        </div>
+      </div>
+      <span class="cls-badge ${clsCss}">${clsLabel}</span>
+    </div>
+    <div class="result-body">
+      <!-- Score -->
+      <div class="score-row">
+        <span class="score-label">Match</span>
+        <div class="score-bar-wrap">
+          <div class="score-bar ${scoreColor}" style="width:${r.match_score}%"></div>
+        </div>
+        <span class="score-num">${r.match_score}</span>
+      </div>
+
+      ${!r._batch ? `
+      <!-- Info grid -->
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="k">Experiencia</div>
+          <div class="v">${r.experiencia_years != null ? r.experiencia_years + ' años' : 'N/D'}</div>
+        </div>
+        <div class="info-item">
+          <div class="k">Teléfono</div>
+          <div class="v">${r.telefono || '—'}</div>
+        </div>
+        <div class="info-item" style="grid-column:1/-1">
+          <div class="k">Educación</div>
+          <div class="v" style="font-family:var(--font-body)">${esc(r.educacion || '—')}</div>
+        </div>
+      </div>
+
+      <!-- Habilidades -->
+      ${r.habilidades && r.habilidades.length ? `
+      <div>
+        <div class="k" style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:6px">Habilidades técnicas</div>
+        <div class="chips">${r.habilidades.map(h => `<span class="chip">${esc(h)}</span>`).join('')}</div>
+      </div>` : ''}
+
+      <!-- Idiomas -->
+      ${r.idiomas && r.idiomas.length ? `
+      <div>
+        <div class="k" style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:6px">Idiomas</div>
+        <div class="chips">${r.idiomas.map(l => `<span class="chip">${esc(l)}</span>`).join('')}</div>
+      </div>` : ''}
+
+      <!-- Resumen -->
+      <div class="resumen-section">
+        <details>
+          <summary>Resumen ejecutivo</summary>
+          <div class="resumen-text">${esc(r.resumen_ejecutivo).replace(/\n\n/g,'<br/><br/>')}</div>
+        </details>
+      </div>
+      ` : ''}
+
+      <!-- Footer -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:4px;border-top:1px solid var(--border)">
+        <span style="font-size:11px;color:var(--muted);font-family:var(--font-mono)">${fecha}</span>
+        <div style="display:flex;gap:8px">
+          ${r.blob_url ? `<a href="${r.blob_url}" target="_blank"><button class="btn btn-outline">Ver CV</button></a>` : ''}
+          <button class="btn btn-outline" onclick="exportJSON(${i})">Exportar</button>
+        </div>
+      </div>
+
+    </div>
+  `;
+  return div;
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function esc(str = '') {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showOverlay(msg, sub) {
+  document.getElementById('overlay').classList.add('active');
+  setOverlayMsg(msg, sub || 'Azure Document Intelligence + GPT-4o');
+}
+function hideOverlay() { document.getElementById('overlay').classList.remove('active'); }
+function setOverlayMsg(msg, sub) {
+  document.getElementById('overlay-msg').textContent = msg || '';
+  document.getElementById('overlay-sub').textContent = sub || '';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 4000);
+}
+
+function exportJSON(i) {
+  const data = allResults[i];
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cv_${data.candidato_id}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Health check on load ─────────────────────────────────────────────────────
+(async () => {
+  try {
+    const r = await fetch(`${API_BASE}/health`, {signal: AbortSignal.timeout(3000)});
+    if (!r.ok) throw new Error();
+    console.log('API conectada ✓');
+  } catch {
+    showToast('⚠️ No se puede conectar con el servidor API. Asegúrate de que el backend está corriendo.');
+  }
+})();
+</script>
+</body>
+</html>
